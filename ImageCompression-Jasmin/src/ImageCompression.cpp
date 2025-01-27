@@ -58,9 +58,6 @@ int main(int argc, char* argv[]) {
 
   cout << "Image loaded: " << width << "x" << height << " with " << channels << " channels." << endl;
 
-  double input_size = std::filesystem::file_size(input_image_path) / 1024.0;
-
-
   bool visually_grayscale = (channels == 3) && isGrayscaleRGB(image_data, width, height);
 
   // Handle single-channel (grayscale) images directly
@@ -102,6 +99,9 @@ int main(int argc, char* argv[]) {
       }
  }
 
+  //Computing input image size (indipendently of image format)
+  double input_size = width * height * channels * sizeof(unsigned char) / 1024.0; // KB
+  
   // Free the original image data
   stbi_image_free(image_data);
 
@@ -146,7 +146,7 @@ int main(int argc, char* argv[]) {
  size_t size_U = height * rank * element_size;
  size_t size_Sigma = rank * rank * element_size;
  size_t size_V = rank * width * element_size;
- size_t total_size = size_U + size_Sigma + size_V;
+ size_t total_size = (size_U + size_Sigma + size_V) * channels;
 
  // Convert to MB
  double total_size_KB = total_size / (1024.0);

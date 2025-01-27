@@ -1,12 +1,7 @@
 Memory usage = memory usage of compressed matrices before reconstruction
 GRAYSCALE:
-rank = 10, error = 0.196481, Compression ratio = 5,62871
-rank = 50, error = 0.123565, Compression ratio = 1,21126
-rank = 100, error = 0.0990575, Compression ratio = 0.557855
-rank = 200, error = 0.0742517, Compression ratio = 0.276193
-
-RGB:
-rank = 10, error = 0.183382, Compression ratio = 9.21807
-rank = 50, error = 0.150588, Compression ratio = 1.83628
-rank = 100, error = 0.138263, Compression ratio = 0.913593
-rank = 200, error = 0.124399, Compression ratio = 0.452318
+rank = 10, error = 0.196481, Compression ratio = 29.97
+rank = 50, error = 0.123565, Compression ratio = 5.97015
+rank = 100, error = 0.0990575, Compression ratio = 2.9703
+rank = 200, error = 0.0742517, Compression ratio = 1.47059
+rank = 400, error = 0.0742517, Compression ratio = 1.47059
