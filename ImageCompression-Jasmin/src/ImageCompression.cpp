@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <cmath>
+#include <filesystem>
 
 // from https://github.com/nothings/stb/tree/master
 #define STB_IMAGE_IMPLEMENTATION
@@ -31,6 +32,11 @@ bool isGrayscaleRGB(unsigned char* image_data, int width, int height) {
     return true;  // Visually grayscale
 }
 
+// Function to get the file size using the std::filesystem library
+//long long getFileSize(const string& filename) {
+//    return std::filesystem::file_size(filename);
+//}
+
 int main(int argc, char* argv[]) {
   if (argc < 3) {
     std::cerr << "Usage: " << argv[0] << " <image_path>" << std::endl;
@@ -52,8 +58,11 @@ int main(int argc, char* argv[]) {
 
   cout << "Image loaded: " << width << "x" << height << " with " << channels << " channels." << endl;
 
+  double input_size = std::filesystem::file_size(input_image_path) / 1024.0;
+
+
   bool visually_grayscale = (channels == 3) && isGrayscaleRGB(image_data, width, height);
-  
+
   // Handle single-channel (grayscale) images directly
   vector<MatrixXd> channel_matrices(channels);
   if (channels == 1) {
@@ -126,15 +135,48 @@ int main(int argc, char* argv[]) {
 
     // Save the compressed image
     const std::string output_image_path = "../test_image/compressed_image.png";
-    if (stbi_write_png(output_image_path.c_str(), width, height, channels, compressed_image_data, width * channels) == 0) {
+    if (stbi_write_png(output_image_path.c_str(), width, height, channels, compressed_image_data.data(), width * channels) == 0) {
         std::cerr << "Error: Could not save the compressed image" << std::endl;
-        delete[] compressed_image_data;
         return 1;
     }
 
  cout << "Image successfully saved to " << output_image_path << endl;
+ // Memory usage calculation for the compressed matrices (U, Sigma, V)
+ size_t element_size = sizeof(double);  // Each element is a double (8 bytes)
+ size_t size_U = height * rank * element_size;
+ size_t size_Sigma = rank * rank * element_size;
+ size_t size_V = rank * width * element_size;
+ size_t total_size = size_U + size_Sigma + size_V;
 
- delete[] compressed_image_data;
+ // Convert to MB
+ double total_size_KB = total_size / (1024.0);
+ double compression_ratio = input_size/total_size_KB;
+ cout << "Original input size: " << input_size << "KB" << endl;
+ cout << "Memory usage of compressed matrices: " << total_size_KB << "KB" << endl;
+ cout << "Memory compression ratio: "<< compression_ratio << endl;
+ cout << "Memory saving: " << input_size-total_size_KB << "KB" << endl;
+
+
+ // Compute the relative Frobenius norm error
+ double total_relative_error = 0.0;
+
+ for (int c = 0; c < channels; ++c) {
+     // Compute Frobenius norm of the original channel
+     double original_norm = std::sqrt(channel_matrices[c].squaredNorm());
+
+    // Compute Frobenius norm of the difference
+     double difference_norm = std::sqrt((channel_matrices[c] - compressed_channels[c]).squaredNorm());
+
+     // Compute relative error for the channel
+     double relative_error = difference_norm / original_norm;
+    total_relative_error += relative_error;
+ }
+
+  // Compute average relative error across all channels, so that we can compare errors between grayscale and RGB images
+ double average_relative_error = total_relative_error / channels;
+
+ cout << "Average relative Frobenius norm error: " << average_relative_error << endl;
+
  return 0;
 
 }
