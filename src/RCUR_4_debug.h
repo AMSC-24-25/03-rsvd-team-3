@@ -5,7 +5,6 @@
 #include <Eigen/QR>
 #include <vector>
 
-#include "RandomizedSVD.h"
 
 using namespace Eigen;
 using namespace std;
